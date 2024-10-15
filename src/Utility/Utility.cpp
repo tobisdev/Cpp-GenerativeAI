@@ -3,55 +3,33 @@
 //
 
 #include "Utility.h"
-
 #ifdef max
 #undef max
 #endif
+
+bool Utility::_initialized = false;
+char Utility::_deviceName[64] = "";
+char Utility::_platform[10] = "";
+char Utility::_toolkit[64] = "";
+char Utility::_computeVersion[10] = "";
+af::Backend Utility::_backend = af::Backend::AF_BACKEND_DEFAULT;
+bool Utility::_doubleSupport = false;
+int Utility::_availableDevices = 0;
 
 void Utility::setup() {
 
     std::cout << "Setup...\n\n";
 
-    af::setBackend(AF_BACKEND_DEFAULT);
+    af::setBackend(AF_BACKEND_DEFAULT);       // GPU Backend
 
-    char device_name[64];
-    char platform[10];
-    char toolkit[64];
-    char compute_version[10];
+    int bestDevice = af::getDevice();               // Find the best graphics device
+    af::setDevice(bestDevice);                      // Select the best graphics device
 
-    int bestDevice = af::getDevice();
-    af::setDevice(bestDevice);
-
-    af::deviceInfo(device_name, platform, toolkit, compute_version);
-
-    std::cout << "-- Available Devices: " << af::getDeviceCount() << "\n";
-    std::cout << "-- Selected Device:\n============================================================\n";
-
-    // Output the device information
-    std::cout << "> Device ID:         " << bestDevice << std::endl;
-    std::cout << "> Device Name:       " << device_name << "\n";
-    std::cout << "> Platform:          " << platform << "\n";
+    af::deviceInfo(_deviceName, _platform, _toolkit, _computeVersion);
 
     af::Backend backend = af::getActiveBackend();
-    switch(backend) {
-        case AF_BACKEND_CPU:
-            std::cout << "> Backend:           CPU\n";
-            break;
-        case AF_BACKEND_CUDA:
-            std::cout << "> Backend:           CUDA\n";
-            break;
-        case AF_BACKEND_OPENCL:
-            std::cout << "> Backend:           OpenCL\n";
-            break;
-    }
-    std::cout << "> Toolkit:           " << toolkit << "\n";
-    std::cout << "> Compute Version:   " << compute_version << "\n";
 
     bool supportsDouble = af::isDoubleAvailable(af::getDevice());
-    std::cout << "> Double precision:  " << (supportsDouble ? "Available" : "Not available") << "\n";
-
-    std::cout << "============================================================\n";
-
 }
 
 af::array Utility::calculate_activation(af::array &values, Activations activation, bool derivative) {

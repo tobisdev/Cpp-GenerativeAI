@@ -10,30 +10,28 @@
 
 #include "../Utility/Utility.h"
 
-using namespace Utility;
-
 class NeuralNetwork {
 private:
     // Neural network values
     std::vector<af::array> _weights;
     std::vector<af::array> _biases;
-    std::vector<Activations> _activations;
+    std::vector<Utility::Activations> _activations;
 
 public:
     // Constructors
     NeuralNetwork() = default;
-    NeuralNetwork(std::vector<int> &topology, std::vector<Activations> &activations, int n = 1);
-    NeuralNetwork(std::vector<int> &topology, std::vector<Activations> &activations, float min,
+    NeuralNetwork(std::vector<int> &topology, std::vector<Utility::Activations> &activations, int n = 1);
+    NeuralNetwork(std::vector<int> &topology, std::vector<Utility::Activations> &activations, float min,
                   float max, bool uniform = true, int n = 1);
     NeuralNetwork(std::string path);
 
     // Getter and setter
     [[nodiscard]] std::vector<af::array> &weights() { return _weights; }
     [[nodiscard]] std::vector<af::array> &biases() { return _biases; }
-    [[nodiscard]] std::vector<Activations> &activationValues() { return _activations; }
+    [[nodiscard]] std::vector<Utility::Activations> &activationValues() { return _activations; }
     [[nodiscard]] af::array &weights(int i) { return _weights[i]; }
     [[nodiscard]] af::array &biases(int i) { return _biases[i]; }
-    [[nodiscard]] Activations &activations(int i) { return _activations[i]; }
+    [[nodiscard]] Utility::Activations &activations(int i) { return _activations[i]; }
 
     // Functions
     bool load(std::string path);

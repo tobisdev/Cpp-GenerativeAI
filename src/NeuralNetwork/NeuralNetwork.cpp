@@ -4,7 +4,7 @@
 
 #include "NeuralNetwork.h"
 
-NeuralNetwork::NeuralNetwork(std::vector<int> &topology, std::vector<Activations> &activations, int n) {
+NeuralNetwork::NeuralNetwork(std::vector<int> &topology, std::vector<Utility::Activations> &activations, int n) {
     if(activations.size() != topology.size() - 1){
         std::cerr << "Sizes do not match!" << "\n";
         return;
@@ -20,7 +20,7 @@ NeuralNetwork::NeuralNetwork(std::vector<int> &topology, std::vector<Activations
     }
 }
 
-NeuralNetwork::NeuralNetwork(std::vector<int> &topology, std::vector<Activations> &activations, float min, float max, bool uniform, int n) {
+NeuralNetwork::NeuralNetwork(std::vector<int> &topology, std::vector<Utility::Activations> &activations, float min, float max, bool uniform, int n) {
     if(activations.size() != topology.size() - 1){
         std::cerr << "Sizes do not match!" << "\n";
         return;
