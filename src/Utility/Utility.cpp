@@ -27,9 +27,11 @@ void Utility::setup() {
 
     af::deviceInfo(_deviceName, _platform, _toolkit, _computeVersion);
 
-    af::Backend backend = af::getActiveBackend();
+    _backend = af::getActiveBackend();
 
-    bool supportsDouble = af::isDoubleAvailable(af::getDevice());
+    _doubleSupport = af::isDoubleAvailable(af::getDevice());
+
+    _initialized = true;
 }
 
 af::array Utility::calculate_activation(af::array &values, Activations activation, bool derivative) {

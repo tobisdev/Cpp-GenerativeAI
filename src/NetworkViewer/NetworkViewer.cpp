@@ -41,73 +41,84 @@ void NetworkViewer::render(bool showGUI) {
 
 void NetworkViewer::renderHUD() {
     sf::Text hudText;
-    hudText.setFont(_globalFont);  // Assuming the font is loaded correctly
-    hudText.setCharacterSize(16);  // Set font size
-    hudText.setFillColor(sf::Color::White);  // Default text color
+    hudText.setFont(_globalFont);
+    hudText.setCharacterSize(16);
+    hudText.setFillColor(sf::Color::White);
 
-    // Create colorful stats display
     std::vector<std::string> hudInfo;
     hudInfo.push_back("FPS: " + std::to_string(_framesPerSecond));
     hudInfo.push_back("Frame Time: " + std::to_string(_deltaTime * 1000.0f) + " ms");
-    hudInfo.push_back("Neural Network Info:");
-    hudInfo.push_back("Number of Layers: " + std::to_string(_network.size()));  // Example, assuming your NeuralNetwork class has this method
-    hudInfo.push_back("Number of Neurons: 99");  // Example
+    hudInfo.push_back("Arrayfire initialized: " + std::string(Utility::initialized() ? "true" : "false"));
+    hudInfo.push_back("Device: " + std::string(Utility::deviceName()));
+    hudInfo.push_back("Platform: " + std::string(Utility::platform()));
+    hudInfo.push_back("Toolkit: " + std::string(Utility::toolkit()));
+    hudInfo.push_back("Compute version: " + std::string(Utility::computeVersion()));
+    hudInfo.push_back("Support for double operations(64 Bit): " + std::string(Utility::doubleSupport() ? "true" : "false"));
+    hudInfo.push_back("Number of Layers: " + std::to_string(_network.size()));
+    hudInfo.push_back("Memory info: (Occupied: " + Utility::sizeToString(_network.bytes()) + ")");
 
-    // Iterate over the HUD elements and display them with individual backgrounds
     float padding = 10.0f;
     float yPos = 10.0f;
 
-    for (size_t i = 0; i < hudInfo.size(); ++i) {
+    for (size_t i = 0; i < hudInfo.size(); i += 2) {
+        // Left-aligned element
         hudText.setString(hudInfo[i]);
+        sf::FloatRect textBoundsLeft = hudText.getLocalBounds();
+        sf::RectangleShape textBackgroundLeft(sf::Vector2f(textBoundsLeft.width + 2 * padding, textBoundsLeft.height + 2 * padding));
+        textBackgroundLeft.setFillColor(sf::Color(0, 0, 0, 180));  // Semi-transparent black
+        hudText.setPosition(padding, yPos);
+        textBackgroundLeft.setPosition(0, yPos - padding / 2);
 
-        // Get the bounding box of the text
-        sf::FloatRect textBounds = hudText.getLocalBounds();
-
-        // Create a rectangle shape that fits the text
-        sf::RectangleShape textBackground(sf::Vector2f(textBounds.width + 2 * padding, textBounds.height + 2 * padding));
-        textBackground.setFillColor(sf::Color(0, 0, 0, 180));  // Semi-transparent black
-
-        // Alternate between left and right alignment
-        if (i % 2 == 0) {
-            // Left-aligned (similar to Minecraft)
-            hudText.setPosition(padding, yPos);
-            textBackground.setPosition(0, yPos - padding / 2);
-        } else {
-            // Right-aligned (anchored to the right side of the window)
-            float xPos = getSize().x - textBounds.width - 2 * padding;
-            hudText.setPosition(xPos, yPos);
-            textBackground.setPosition(xPos - padding, yPos - padding / 2);
-        }
-
-        // Color enhancements for FPS
-        if (i == 0) {  // FPS element
-            if (_framesPerSecond >= 60) {
-                hudText.setFillColor(sf::Color::Green);  // Good performance
-            } else if (_framesPerSecond >= 30) {
-                hudText.setFillColor(sf::Color::Yellow);  // Moderate performance
-            } else {
-                hudText.setFillColor(sf::Color::Red);  // Poor performance
-            }
-        } else {
-            hudText.setFillColor(sf::Color::White);  // Reset to white for other text
-        }
-
-        // Draw the background and the text
-        draw(textBackground);
+        // Draw left-aligned element
+        draw(textBackgroundLeft);
         draw(hudText);
 
-        // Increment the y position for the next line
-        yPos += textBounds.height + 2 * padding;
+        // Right-aligned element
+        if (i + 1 < hudInfo.size()) {
+            hudText.setString(hudInfo[i + 1]);
+            sf::FloatRect textBoundsRight = hudText.getLocalBounds();
+            sf::RectangleShape textBackgroundRight(sf::Vector2f(textBoundsRight.width + 2 * padding, textBoundsLeft.height + 2 * padding));
+            textBackgroundRight.setFillColor(sf::Color(0, 0, 0, 180));  // Semi-transparent black
+
+            float xPosRight = getSize().x - textBoundsRight.width - 2 * padding;
+            hudText.setPosition(xPosRight + padding, yPos);
+            textBackgroundRight.setPosition(xPosRight, yPos - padding / 2);
+
+            // Draw right-aligned element
+            draw(textBackgroundRight);
+            draw(hudText);
+        }
+
+        // Increment the vertical position only once for both elements
+        yPos += textBoundsLeft.height + 2 * padding;
     }
 }
 
 void NetworkViewer::renderNetwork() {
     sf::RectangleShape r;
-    r.setSize({800, 800});
+    r.setSize({(float)this->getSize().x, (float)this->getSize().y});
     r.setFillColor(sf::Color::White);
     draw(r);
 }
 
 void NetworkViewer::handleEvents(sf::Event event) {
+    switch (event.type) {
+        case sf::Event::Closed:
+            this->close();
+            break;
+        case sf::Event::Resized:
+            // catch the resize events
+            if (event.type == sf::Event::Resized)
+            {
+                // update the view to the new size of the window
+                sf::FloatRect visibleArea(0, 0, event.size.width, event.size.height);
+                this->setView(sf::View(visibleArea));
+            }
+        case sf::Event::KeyPressed:
+        {
 
+        }
+        default:
+            break;
+    }
 }

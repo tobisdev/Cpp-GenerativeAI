@@ -47,7 +47,7 @@ public:
     [[nodiscard]] static char* toolkit() { return _toolkit; }
     [[nodiscard]] static char* computeVersion() { return _computeVersion; }
     [[nodiscard]] static af::Backend &backend() { return _backend; }
-    [[nodiscard]] static bool &getDoubleSupport() { return _doubleSupport; }
+    [[nodiscard]] static bool &doubleSupport() { return _doubleSupport; }
     [[nodiscard]] static int availableDevices() { return _availableDevices; };
     static void initialized(const bool &value) { _initialized = value; }
     static void dDeviceName(const char *value) { strncpy(_deviceName, value, sizeof(_deviceName) - 1); _deviceName[sizeof(_deviceName) - 1] = '\0'; }
