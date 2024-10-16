@@ -126,6 +126,8 @@ void NetworkViewer::renderNetwork() {
     const float layerSpacing = 75.0f;
     const float neuronSpacing = 50.f;
 
+    const float outline = 2.5f;
+
     // Cache weights and biases from ArrayFire once
     std::vector<std::vector<std::vector<float>>> cachedWeights(topology.size() - 1); // 3D array for weights
     std::vector<std::vector<float>> cachedBiases(topology.size() - 1); // 2D array for biases
@@ -177,7 +179,9 @@ void NetworkViewer::renderNetwork() {
         for (int neuron = 0; neuron < topology[layer]; ++neuron) {
             sf::CircleShape neuronShape(neuronRadius);
             neuronShape.setPosition(x - neuronRadius, yOffset + neuron * neuronSpacing - neuronRadius);
-            neuronShape.setFillColor((layer > 0) ? valueToColor(cachedBiases[layer - 1][neuron], minBias, maxBias) : sf::Color::White);
+            neuronShape.setOutlineThickness(outline);
+            neuronShape.setOutlineColor((layer > 0) ? valueToColor(cachedBiases[layer - 1][neuron], minBias, maxBias) : sf::Color::White);
+            neuronShape.setFillColor(sf::Color::Black);
 
             // Store the neuron for later drawing
             neurons.push_back(neuronShape);
@@ -221,14 +225,18 @@ void NetworkViewer::handleEvents(sf::Event event) {
 
         case sf::Event::KeyPressed:
             // Handle arrow keys for moving the network
-            if (event.key.code == sf::Keyboard::Up) {
-                _networkView.move(0, -moveSpeed);  // Move up
-            } else if (event.key.code == sf::Keyboard::Down) {
-                _networkView.move(0, moveSpeed);   // Move down
-            } else if (event.key.code == sf::Keyboard::Left) {
-                _networkView.move(-moveSpeed, 0);  // Move left
-            } else if (event.key.code == sf::Keyboard::Right) {
-                _networkView.move(moveSpeed, 0);   // Move right
+            if (event.key.code == sf::Keyboard::Down || event.key.code == sf::Keyboard::S) {
+                _networkView.move(0, -moveSpeed);
+            } else if (event.key.code == sf::Keyboard::Up || event.key.code == sf::Keyboard::W) {
+                _networkView.move(0, moveSpeed);
+            } else if (event.key.code == sf::Keyboard::Right || event.key.code == sf::Keyboard::D) {
+                _networkView.move(-moveSpeed, 0);
+            } else if (event.key.code == sf::Keyboard::Left || event.key.code == sf::Keyboard::A) {
+                _networkView.move(moveSpeed, 0);
+            } else if (event.key.code == sf::Keyboard::Equal) {
+                _networkView.zoom(1.0f - zoomSpeed);  // Zoom in
+            } else if (event.key.code == sf::Keyboard::Dash) {
+                _networkView.zoom(1.0f + zoomSpeed);  // Zoom out
             }
             break;
 

@@ -12,7 +12,7 @@
 int main() {
     Utility::setup();
 
-    std::vector<int> topology = {3, 4, 4, 3};
+    std::vector<int> topology = {3, 10, 10, 3};
     std::vector<Utility::Activations> activations = {
             Utility::Activations::LeakyReLU,
             Utility::Activations::LeakyReLU,

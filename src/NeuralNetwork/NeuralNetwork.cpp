@@ -41,7 +41,26 @@ NeuralNetwork::NeuralNetwork(std::vector<int> &topology, std::vector<Utility::Ac
     }
 }
 
-// Functions
+af::array NeuralNetwork::feed_forward(af::array &input) {
+    af::array value = input;
+
+    if (_weights.empty()) {
+        std::cerr << "The network does not possess any layers!" << "\n";
+        return value;
+    }
+
+    if (input.dims()[0] != _weights[0].dims()[1] && input.dims()[2] != _weights[0].dims()[2]) {
+        std::cerr << "The input dimension must match the first layer's weight dimensions!" << "\n";
+        return value;
+    }
+
+    for (int i = 0; i < _weights.size(); ++i) {
+        value = af::matmul(_weights[i], value) + _biases[i];
+        value = Utility::calculate_activation(value, _activations[i]);
+    }
+
+    return value;
+}
 
 int NeuralNetwork::size() {
     return (int)_weights.size() + 1;
