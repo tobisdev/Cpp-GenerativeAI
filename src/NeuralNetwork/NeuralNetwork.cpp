@@ -59,8 +59,8 @@ std::vector<int> NeuralNetwork::topology() {
     std::vector<int> output;
 
     for (int i = 0; i < _weights.size(); ++i) {
-        int currentNeurons = (int)_weights[i].dims()[1];
-        int previousNeurons = (int)_weights[i].dims()[0];
+        int currentNeurons = (int)_weights[i].dims()[0];
+        int previousNeurons = (int)_weights[i].dims()[1];
 
         if(i == 0){
             output.emplace_back(previousNeurons);
