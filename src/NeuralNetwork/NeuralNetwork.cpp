@@ -49,7 +49,7 @@ af::array NeuralNetwork::feed_forward(af::array &input) {
         return value;
     }
 
-    if (input.dims()[0] != _weights[0].dims()[1] && input.dims()[2] != _weights[0].dims()[2]) {
+    if (input.dims()[0] != _weights[0].dims()[1] || input.dims()[2] != _weights[0].dims()[2]) {
         std::cerr << "The input dimension must match the first layer's weight dimensions!" << "\n";
         return value;
     }
@@ -58,7 +58,7 @@ af::array NeuralNetwork::feed_forward(af::array &input) {
 
         // z = activation(weights * inputs + biases)
 
-        value = af::matmulNT(_weights[i], value) + _biases[i];
+        value = af::matmul(_weights[i], value) + _biases[i];
         value = Utility::calculate_activation(value, _activations[i]);
     }
 
@@ -94,8 +94,8 @@ std::vector<int> NeuralNetwork::topology() {
     return output;
 }
 
-void NeuralNetwork::breed(std::vector<int> &points, int winners, float min, float max, bool uniform) {
-    if(winners > _weights[0].dims()[3]){
+void NeuralNetwork::breed(std::vector<float> &fitness, int winners, float min, float max, bool uniform) {
+    if(winners > _weights[0].dims()[2]){
         std::cerr << "The number of winners can not be higher than the number of networks!\n";
         return;
     }
@@ -116,7 +116,7 @@ void NeuralNetwork::breed(std::vector<int> &points, int winners, float min, floa
     }
 
     // Find the best neural networks
-    auto selectedNetworks = Utility::find_top_n(points, winners);
+    auto selectedNetworks = Utility::find_top_n(fitness, winners);
 
     // Copy the winners into the children to preserve them
     for (int network = 0; network < selectedNetworks.size(); ++network) {
@@ -131,14 +131,15 @@ void NeuralNetwork::breed(std::vector<int> &points, int winners, float min, floa
     std::vector<std::pair<int, int>> breedingPairs;
 
     // Decide the breeding pairs
-    int numPairs = _weights[0].dims()[3] - winners;
-    if (numPairs % 2 != 0) numPairs -= 1; // Make it even
+    int numPairs = _weights[0].dims()[2] - winners;
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<> dis(0, selectedNetworks.size() - 1);
 
-    for (int i = 0; i < numPairs; i += 2) {
-        if (i + 1 >= selectedNetworks.size()) break;
-        int n1 = selectedNetworks[i].second;
-        int n2 = selectedNetworks[i + 1].second;
-        breedingPairs.emplace_back(n1, n2);
+    for(int i = 0; i < numPairs; ++i){
+        int idx1 = dis(gen);
+        int idx2 = dis(gen);
+        breedingPairs.emplace_back(selectedNetworks[idx1].second, selectedNetworks[idx2].second);
     }
 
     // Cross the values of the networks

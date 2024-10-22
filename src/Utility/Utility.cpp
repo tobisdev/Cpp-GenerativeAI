@@ -146,8 +146,8 @@ std::string Utility::sizeToString(size_t size) {
     return out;
 }
 
-std::vector<std::pair<int, int>> Utility::find_top_n(const std::vector<int>& vec, int n) {
-    std::vector<std::pair<int, int>> value_index_pairs;
+std::vector<std::pair<float, int>> Utility::find_top_n(const std::vector<float>& vec, int n) {
+    std::vector<std::pair<float, int>> value_index_pairs;
     value_index_pairs.reserve(vec.size());
 
     for (int i = 0; i < vec.size(); ++i) {
@@ -159,7 +159,7 @@ std::vector<std::pair<int, int>> Utility::find_top_n(const std::vector<int>& vec
 
     n = std::min(n, static_cast<int>(value_index_pairs.size()));
 
-    std::vector<std::pair<int, int>> result(value_index_pairs.begin(), value_index_pairs.begin() + n);
+    std::vector<std::pair<float, int>> result(value_index_pairs.begin(), value_index_pairs.begin() + n);
 
     return result;
 }

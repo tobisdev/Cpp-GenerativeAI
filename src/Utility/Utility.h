@@ -42,7 +42,7 @@ public:
     static std::string sizeToString(size_t size);
 
     // Find the n biggest values in a vector
-    static std::vector<std::pair<int, int>> find_top_n(const std::vector<int>& vec, int n);
+    static std::vector<std::pair<float, int>> find_top_n(const std::vector<float>& vec, int n);
 
     // Getter and setter
     [[nodiscard]] static bool &initialized() { return _initialized; }

@@ -12,21 +12,53 @@
 int main() {
     Utility::setup();
 
-    std::vector<int> topology = {3, 10, 10, 3};
+    std::vector<std::vector<float>> input = {{0, 0}, {0, 1}, {1, 0}, {1, 1}};
+    std::vector<float> expected = {0, 1, 1, 0};
+
+    std::vector<int> topology = {2, 4, 1};
     std::vector<Utility::Activations> activations = {
-            Utility::Activations::LeakyReLU,
             Utility::Activations::LeakyReLU,
             Utility::Activations::LeakyReLU
     };
 
-    NeuralNetwork network(topology, activations, 0.2f, 0.8f, true, 5000);
+    int networks = 500;
+
+    NeuralNetwork network(topology, activations, 0.2f, 0.8f, true, networks);
 
     NetworkViewer viewer({800, 800}, "Neural-Network-Viewer", network);
 
     viewer.setFramerateLimit(144);
 
     while(true){
-        //network = {topology, activations, 0.2f, 0.8f};
+
+        std::vector<float> fitness(networks, 0.0f);
+
+        for (int i = 0; i < input.size(); ++i) {
+            af::array in = Utility::vectorToArray(input[i]);
+            af::array in3d = af::tile(in, 1, 1, networks);
+
+            std::cout << "Called feed forward:\n";
+            af::array result = network.feed_forward(in3d);
+            std::cout << "Finished feed forward!\n";
+
+
+            std::cout << "Start evaluating the result!\n";
+            af::array expected3d = af::constant(expected[i], 1, 1, networks);
+
+            std::cout << "Apply mean square error function!\n";
+            af::array error = af::pow(result - expected3d, 2);
+
+            std::cout << "Convert stuff to vector!\n";
+            auto res = Utility::arrayToVector(af::flat(error));
+
+            for (int j = 0; j < res.size(); ++j) {
+                fitness[j] += res[j];
+            }
+        }
+
+        std::cout << "BREEED!\n";
+        network.breed(fitness, 20, 0.1f, 0.4f);
+
         viewer.update();
         viewer.render();
     }

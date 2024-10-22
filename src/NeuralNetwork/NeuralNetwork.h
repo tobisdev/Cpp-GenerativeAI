@@ -7,6 +7,7 @@
 
 #include <arrayfire.h>
 #include <vector>
+#include <random>
 
 #include "../Utility/Utility.h"
 
@@ -42,7 +43,7 @@ public:
 
     af::array feed_forward(af::array &input);
 
-    void breed(std::vector<int> &points, int winners, float min, float max, bool uniform = true);
+    void breed(std::vector<float> &fitness, int winners, float min, float max, bool uniform = true);
 };
 
 
