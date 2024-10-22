@@ -6,6 +6,9 @@
 #ifdef max
 #undef max
 #endif
+#ifdef min
+#undef min
+#endif
 
 bool Utility::_initialized = false;
 char Utility::_deviceName[64] = "";
@@ -141,4 +144,22 @@ std::string Utility::sizeToString(size_t size) {
     }
 
     return out;
+}
+
+std::vector<std::pair<int, int>> Utility::find_top_n(const std::vector<int>& vec, int n) {
+    std::vector<std::pair<int, int>> value_index_pairs;
+    value_index_pairs.reserve(vec.size());
+
+    for (int i = 0; i < vec.size(); ++i) {
+        value_index_pairs[i].first = vec[i];
+        value_index_pairs[i].second = i;
+    }
+
+    std::sort(value_index_pairs.begin(), value_index_pairs.end(), std::greater<>());
+
+    n = std::min(n, static_cast<int>(value_index_pairs.size()));
+
+    std::vector<std::pair<int, int>> result(value_index_pairs.begin(), value_index_pairs.begin() + n);
+
+    return result;
 }

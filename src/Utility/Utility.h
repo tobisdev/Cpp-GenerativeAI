@@ -7,6 +7,7 @@
 
 #include <arrayfire.h>
 #include <iostream>
+#include <algorithm>
 
 class Utility{
 private:
@@ -39,6 +40,9 @@ public:
 
     // Conversion functions for size_t
     static std::string sizeToString(size_t size);
+
+    // Find the n biggest values in a vector
+    static std::vector<std::pair<int, int>> find_top_n(const std::vector<int>& vec, int n);
 
     // Getter and setter
     [[nodiscard]] static bool &initialized() { return _initialized; }

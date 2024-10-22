@@ -19,7 +19,7 @@ int main() {
             Utility::Activations::LeakyReLU
     };
 
-    NeuralNetwork network(topology, activations, 0.2f, 0.8f, true);
+    NeuralNetwork network(topology, activations, 0.2f, 0.8f, true, 5000);
 
     NetworkViewer viewer({800, 800}, "Neural-Network-Viewer", network);
 

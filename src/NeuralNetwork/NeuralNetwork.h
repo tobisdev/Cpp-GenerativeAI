@@ -17,6 +17,8 @@ private:
     std::vector<af::array> _biases;
     std::vector<Utility::Activations> _activations;
 
+    af::array crossover(int idxA, int idxB);
+
 public:
     // Constructors
     NeuralNetwork() = default;
@@ -41,6 +43,8 @@ public:
     std::vector<int> topology();
 
     af::array feed_forward(af::array &input);
+
+    void breed(std::vector<int> &points, int winners, float min, float max, bool uniform = true);
 };
 
 
