@@ -17,8 +17,6 @@ private:
     std::vector<af::array> _biases;
     std::vector<Utility::Activations> _activations;
 
-    af::array crossover(int idxA, int idxB);
-
 public:
     // Constructors
     NeuralNetwork() = default;

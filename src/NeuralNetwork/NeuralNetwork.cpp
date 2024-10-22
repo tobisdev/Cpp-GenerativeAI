@@ -123,8 +123,8 @@ void NeuralNetwork::breed(std::vector<int> &points, int winners, float min, floa
         for (int layer = 0; layer < _weights.size(); ++layer) {
             int selectedIdx = selectedNetworks[network].second;
 
-            weights[network](af::span, af::span, network) = _weights[network](af::span, af::span, selectedIdx);
-            biases[network](af::span, af::span, network) = _biases[network](af::span, af::span, selectedIdx);
+            weights[layer](af::span, af::span, network) = _weights[layer](af::span, af::span, selectedIdx);
+            biases[layer](af::span, af::span, network) = _biases[layer](af::span, af::span, selectedIdx);
         }
     }
 
@@ -153,36 +153,19 @@ void NeuralNetwork::breed(std::vector<int> &points, int winners, float min, floa
             int n1 = breedingPairs[network].first;
             int n2 = breedingPairs[network].second;
 
-            weights(af::span, af::span, winners + network) = _weights[layer](af::span, af::span, n1) * wMask
-                                         + _weights[layer](af::span, af::span, n2) * (1 - wMask);
-            biases(af::span, af::span, winners + network) = _biases[layer](af::span, af::span, n1) * bMask
-                                        + _biases[layer](af::span, af::span, n2) * (1 - bMask);
+            weights[layer](af::span, af::span, winners + network) =
+                    _weights[layer](af::span, af::span, n1) * wMask
+                    + _weights[layer](af::span, af::span, n2) * (1 - wMask);
+            biases[layer](af::span, af::span, winners + network) =
+                    _biases[layer](af::span, af::span, n1) * bMask
+                    + _biases[layer](af::span, af::span, n2) * (1 - bMask);
 
         }
     }
 
-}
-
-af::array NeuralNetwork::crossover(int idxA, int idxB) {
-
-    if(idxA > _weights[0].dims()[3] || idxB > _weights[0].dims()[3]){
-        std::cerr << "The indices can not be higher than the number of networks!\n";
+    // Copy the children into the networks
+    for (int layer = 0; layer < _weights.size(); ++layer) {
+        _weights[layer] = weights[layer];
+        _biases[layer] = biases[layer];
     }
-
-    for (int i = 0; i < _weights.size(); ++i) {
-        af::dim4 wDims = _weights[i].dims();
-        af::dim4 bDims = _biases[i].dims();
-
-        af::array wMask = af::randu(wDims[0], wDims[1]) > 0.5f;
-        af::array bMask = af::randu(bDims[0], bDims[1]) > 0.5f;
-
-        af::array childWeights = _weights[i](wDims[0], wDims[1], idxA) * wMask
-                + _weights[i](wDims[0], wDims[1], idxB) * (1 - wMask);
-        af::array childBiases = _biases[i](bDims[0], bDims[1], idxA) * bMask
-                + _biases[i](bDims[0], bDims[1], idxB) * (1 - bMask);
-    }
-
-
 }
-
-
