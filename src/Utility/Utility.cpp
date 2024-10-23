@@ -146,11 +146,12 @@ std::string Utility::sizeToString(size_t size) {
     return out;
 }
 
-std::vector<std::pair<float, int>> Utility::find_top_n(const std::vector<float>& vec, int n) {
+std::vector<int> Utility::find_top_n(const std::vector<float>& vec, int n) {
     if (vec.empty() || n <= 0) {
         return {};
     }
 
+    // Create a vector of pairs (value, index)
     std::vector<std::pair<float, int>> value_index_pairs;
     value_index_pairs.reserve(vec.size());
 
@@ -158,6 +159,7 @@ std::vector<std::pair<float, int>> Utility::find_top_n(const std::vector<float>&
         value_index_pairs.emplace_back(vec[i], static_cast<int>(i));
     }
 
+    // Sort the pairs based on the values in descending order
     std::sort(value_index_pairs.begin(), value_index_pairs.end(),
               [](const std::pair<float, int>& a, const std::pair<float, int>& b) -> bool {
                   return a.first > b.first;
@@ -166,7 +168,13 @@ std::vector<std::pair<float, int>> Utility::find_top_n(const std::vector<float>&
 
     n = std::min(n, static_cast<int>(value_index_pairs.size()));
 
-    std::vector<std::pair<float, int>> result(value_index_pairs.begin(), value_index_pairs.begin() + n);
+    // Extract the indices of the top n elements
+    std::vector<int> result;
+    result.reserve(n);
+
+    for (int i = 0; i < n; ++i) {
+        result.push_back(value_index_pairs[i].second);
+    }
 
     return result;
 }

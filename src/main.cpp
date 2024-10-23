@@ -15,7 +15,7 @@ int main() {
     std::vector<std::vector<float>> input = {{0, 0}, {0, 1}, {1, 0}, {1, 1}};
     std::vector<float> expected = {0, 1, 1, 0};
 
-    std::vector<int> topology = {2, 5, 1};
+    std::vector<int> topology = {2, 3, 1};
     std::vector<Utility::Activations> activations = {
             Utility::Activations::LeakyReLU,
             Utility::Activations::LeakyReLU
@@ -23,7 +23,7 @@ int main() {
 
     int networks = 500;
 
-    NeuralNetwork network(topology, activations, 0.1f, 01.9231f, true, networks);
+    NeuralNetwork network(topology, activations, -0.8f, 0.8f, true, networks);
 
     NetworkViewer viewer({1000, 800}, "Neural-Network-Viewer", network);
 
@@ -33,7 +33,7 @@ int main() {
 
     while(true){
 
-        if(cnt == 122){
+        if(cnt != 122){
             std::vector<float> fitness(networks, 0.0f);
 
             for (int i = 0; i < input.size(); ++i) {
@@ -44,23 +44,27 @@ int main() {
 
                 af::array expected3d = af::constant(expected[i], 1, 1, networks);
 
-                af::array error = 1000.0f * (1 / af::pow(result - expected3d, 2));
+                af::array error = af::pow(result - expected3d, 2);
                 //af::print("MSE:",error);
 
                 auto res = Utility::arrayToVector(af::flat(error));
 
                 for (int j = 0; j < res.size(); ++j) {
-                    fitness[j] += res[j];
+                    fitness[j] += -1.0f * res[j];
                 }
             }
 
-            network.breed(fitness, 25, 0.1f, 0.8f);
+            int idxBest = Utility::find_top_n(fitness, 1)[0];
+
+            std::cout << "The best performing network is #" << idxBest << " with an error of: " << -1.0f * fitness[idxBest] << "\n";
+
+            network.breed(fitness, 25, -0.5f, 0.5f);
             cnt = 0;
         }
         cnt++;
 
         viewer.update();
-        //viewer.render();
+        viewer.render();
     }
 
     return 0;

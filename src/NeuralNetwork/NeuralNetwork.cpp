@@ -57,7 +57,6 @@ af::array NeuralNetwork::feed_forward(af::array &input) {
     for (int i = 0; i < _weights.size(); ++i) {
 
         // z = activation(weights * inputs + biases)
-
         value = af::matmul(_weights[i], value) + _biases[i];
         value = Utility::calculate_activation(value, _activations[i]);
     }
@@ -95,13 +94,12 @@ std::vector<int> NeuralNetwork::topology() {
 }
 
 void NeuralNetwork::breed(std::vector<float> &fitness, int winners, float min, float max, bool uniform) {
-    if(winners > _weights[0].dims()[2]){
+    unsigned int numNetworks = _weights[0].dims()[2];
+
+    if(winners > numNetworks){
         std::cerr << "The number of winners can not be higher than the number of networks!\n";
         return;
     }
-
-    //Debug
-    auto startTime = std::chrono::high_resolution_clock::now();
 
     // Buffer for child networks
     std::vector<af::array> weights;
@@ -118,33 +116,26 @@ void NeuralNetwork::breed(std::vector<float> &fitness, int winners, float min, f
         }
     }
 
-    // Debug
-    std::cout << "[" << 1000.0f * std::chrono::duration<float>(std::chrono::high_resolution_clock::now() - startTime).count()
-    << " ms] Creation of the Buffer for the child networks!\n";
-    startTime = std::chrono::high_resolution_clock::now();
-
     // Find the best neural networks
     auto selectedNetworks = Utility::find_top_n(fitness, winners);
 
     // Copy the winners into the children to preserve them
-    for (int network = 0; network < selectedNetworks.size(); ++network) {
-        for (int layer = 0; layer < _weights.size(); ++layer) {
-            int selectedIdx = selectedNetworks[network].second;
+    af::array selectedIdxArray(1, selectedNetworks.size(), selectedNetworks.data());
 
-            weights[layer](af::span, af::span, network) = _weights[layer](af::span, af::span, selectedIdx);
-            biases[layer](af::span, af::span, network) = _biases[layer](af::span, af::span, selectedIdx);
-        }
+    for (int layer = 0; layer < _weights.size(); ++layer) {
+        af::array selectedWeights = af::lookup(_weights[layer], selectedIdxArray.as(u32), 2);
+        af::array selectedBiases = af::lookup(_biases[layer], selectedIdxArray.as(u32), 2);
+
+        // Assign the selected weights and biases to the first numSelectedNetworks positions
+        af::seq destSeq(0, selectedNetworks.size() - 1);
+
+        weights[layer](af::span, af::span, destSeq) = selectedWeights;
+        biases[layer](af::span, af::span, destSeq) = selectedBiases;
     }
 
-    // Debug
-    std::cout << "[" << 1000.0f * std::chrono::duration<float>(std::chrono::high_resolution_clock::now() - startTime).count()
-              << " ms] Saving the winner networks!\n";
-    startTime = std::chrono::high_resolution_clock::now();
-
-    std::vector<std::pair<int, int>> breedingPairs;
-
     // Decide the breeding pairs
-    int numPairs = _weights[0].dims()[2] - winners;
+    unsigned int numPairs = numNetworks - winners;
+    std::vector<unsigned int> n1Vec(numPairs), n2Vec(numPairs);
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_int_distribution<> dis(0, selectedNetworks.size() - 1);
@@ -152,36 +143,24 @@ void NeuralNetwork::breed(std::vector<float> &fitness, int winners, float min, f
     for(int i = 0; i < numPairs; ++i){
         int idx1 = dis(gen);
         int idx2 = dis(gen);
-        breedingPairs.emplace_back(selectedNetworks[idx1].second, selectedNetworks[idx2].second);
-    }
 
-    // Debug
-    std::cout << "[" << 1000.0f * std::chrono::duration<float>(std::chrono::high_resolution_clock::now() - startTime).count()
-              << " ms] Deciding the breeding pairs!\n";
-    startTime = std::chrono::high_resolution_clock::now();
+        n1Vec[i] = idx1;
+        n2Vec[i] = idx2;
+    }
+    af::array n1Array(1, numPairs, n1Vec.data());
+    af::array n2Array(1, numPairs, n2Vec.data());
 
     // Cross the values of the networks
     for (int layer = 0; layer < _weights.size(); ++layer) {
-        af::dim4 wDims = _weights[layer].dims(); // [rows, cols, num_networks]
-        af::dim4 bDims = _biases[layer].dims();  // [rows, cols, num_networks]
-
-        int numPairs = breedingPairs.size();
-
-        // Extract parent indices and create arrays
-        std::vector<unsigned> n1Vec(numPairs), n2Vec(numPairs);
-        for (int i = 0; i < numPairs; ++i) {
-            n1Vec[i] = breedingPairs[i].first;
-            n2Vec[i] = breedingPairs[i].second;
-        }
-        af::array n1Array(1, numPairs, n1Vec.data());
-        af::array n2Array(1, numPairs, n2Vec.data());
+        af::dim4 wDims = _weights[layer].dims();
+        af::dim4 bDims = _biases[layer].dims();
 
         // Generate masks for all network pairs
         af::array wMasks = af::randu(wDims[0], wDims[1], numPairs) > 0.5f;
         af::array bMasks = af::randu(bDims[0], bDims[1], numPairs) > 0.5f;
 
         // Extract parent weights and biases using the lookup function along the third dimension
-        af::array parent1Weights = af::lookup(_weights[layer], n1Array, 2);
+        af::array parent1Weights = af::lookup(_weights[layer], n1Array.as(u32), 2);
         af::array parent2Weights = af::lookup(_weights[layer], n2Array.as(u32), 2);
 
         af::array parent1Biases = af::lookup(_biases[layer], n1Array.as(u32), 2);
@@ -194,23 +173,13 @@ void NeuralNetwork::breed(std::vector<float> &fitness, int winners, float min, f
         // Assign the new weights and biases to the appropriate slices
         af::seq destSeq(winners, winners + numPairs - 1);
 
-        weights[layer](af::span, af::span, destSeq) = newWeights;
-        biases[layer](af::span, af::span, destSeq) = newBiases;
+        weights[layer](af::span, af::span, destSeq) += newWeights;
+        biases[layer](af::span, af::span, destSeq) += newBiases;
     }
-
-
-    // Debug
-    std::cout << "[" << 1000.0f * std::chrono::duration<float>(std::chrono::high_resolution_clock::now() - startTime).count()
-              << " ms] Crossing the parent networks!\n";
-    startTime = std::chrono::high_resolution_clock::now();
 
     // Copy the children into the networks
     for (int layer = 0; layer < _weights.size(); ++layer) {
         _weights[layer] = weights[layer];
         _biases[layer] = biases[layer];
     }
-
-    // Debug
-    std::cout << "[" << 1000.0f * std::chrono::duration<float>(std::chrono::high_resolution_clock::now() - startTime).count()
-              << " ms] !\n";
 }
