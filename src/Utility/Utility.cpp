@@ -147,15 +147,22 @@ std::string Utility::sizeToString(size_t size) {
 }
 
 std::vector<std::pair<float, int>> Utility::find_top_n(const std::vector<float>& vec, int n) {
+    if (vec.empty() || n <= 0) {
+        return {};
+    }
+
     std::vector<std::pair<float, int>> value_index_pairs;
     value_index_pairs.reserve(vec.size());
 
-    for (int i = 0; i < vec.size(); ++i) {
-        value_index_pairs[i].first = vec[i];
-        value_index_pairs[i].second = i;
+    for (size_t i = 0; i < vec.size(); ++i) {
+        value_index_pairs.emplace_back(vec[i], static_cast<int>(i));
     }
 
-    std::sort(value_index_pairs.begin(), value_index_pairs.end(), std::greater<>());
+    std::sort(value_index_pairs.begin(), value_index_pairs.end(),
+              [](const std::pair<float, int>& a, const std::pair<float, int>& b) -> bool {
+                  return a.first > b.first;
+              }
+    );
 
     n = std::min(n, static_cast<int>(value_index_pairs.size()));
 

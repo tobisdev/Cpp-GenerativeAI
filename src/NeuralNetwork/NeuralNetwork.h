@@ -8,6 +8,7 @@
 #include <arrayfire.h>
 #include <vector>
 #include <random>
+#include <chrono>
 
 #include "../Utility/Utility.h"
 
