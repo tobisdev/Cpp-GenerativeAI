@@ -64,36 +64,17 @@ af::array NeuralNetwork::feed_forward(af::array &input) {
     return value;
 }
 
-int NeuralNetwork::size() {
-    return (int)_weights.size() + 1;
-}
-
-size_t NeuralNetwork::bytes() {
-    size_t size = 0;
-    for (int i = 0; i < _weights.size(); ++i) {
-        size += _biases[i].bytes() + _weights[i].bytes();
-    }
-    return size;
-}
-
-std::vector<int> NeuralNetwork::topology() {
-    std::vector<int> output;
-
-    for (int i = 0; i < _weights.size(); ++i) {
-        int currentNeurons = (int)_weights[i].dims()[0];
-        int previousNeurons = (int)_weights[i].dims()[1];
-
-        if(i == 0){
-            output.emplace_back(previousNeurons);
-        }
-
-        output.emplace_back(currentNeurons);
-    }
-
-    return output;
+af::array NeuralNetwork::feed_forward(std::vector<float> &input){
+    af::array in = Utility::vectorToArray(input);
+    return feed_forward(in);
 }
 
 void NeuralNetwork::breed(std::vector<float> &fitness, int winners, float min, float max, bool uniform) {
+    if (_weights.empty()) {
+        std::cerr << "The network does not possess any layers!" << "\n";
+        return;
+    }
+
     unsigned int numNetworks = _weights[0].dims()[2];
 
     if(winners > numNetworks){
@@ -182,4 +163,38 @@ void NeuralNetwork::breed(std::vector<float> &fitness, int winners, float min, f
         _weights[layer] = weights[layer];
         _biases[layer] = biases[layer];
     }
+}
+
+void NeuralNetwork::breed(af::array &fitness, int winners, float min, float max, bool uniform){
+    auto in = Utility::arrayToVector(fitness);
+    breed(in, winners, min, max, uniform);
+}
+
+int NeuralNetwork::size() {
+    return (int)_weights.size() + 1;
+}
+
+size_t NeuralNetwork::bytes() {
+    size_t size = 0;
+    for (int i = 0; i < _weights.size(); ++i) {
+        size += _biases[i].bytes() + _weights[i].bytes();
+    }
+    return size;
+}
+
+std::vector<int> NeuralNetwork::topology() {
+    std::vector<int> output;
+
+    for (int i = 0; i < _weights.size(); ++i) {
+        int currentNeurons = (int)_weights[i].dims()[0];
+        int previousNeurons = (int)_weights[i].dims()[1];
+
+        if(i == 0){
+            output.emplace_back(previousNeurons);
+        }
+
+        output.emplace_back(currentNeurons);
+    }
+
+    return output;
 }

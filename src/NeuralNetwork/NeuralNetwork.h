@@ -43,7 +43,9 @@ public:
     std::vector<int> topology();
 
     af::array feed_forward(af::array &input);
+    af::array feed_forward(std::vector<float> &input);
 
+    void breed(af::array &fitness, int winners, float min, float max, bool uniform = true);
     void breed(std::vector<float> &fitness, int winners, float min, float max, bool uniform = true);
 };
 

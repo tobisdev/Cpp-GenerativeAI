@@ -21,7 +21,7 @@ int main() {
             Utility::Activations::LeakyReLU
     };
 
-    int networks = 500;
+    int networks = 5000;
 
     NeuralNetwork network(topology, activations, -0.8f, 0.8f, true, networks);
 
