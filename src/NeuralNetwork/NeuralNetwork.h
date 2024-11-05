@@ -38,12 +38,16 @@ public:
     // Functions
     bool load(std::string path);
     bool save(std::string path);
+    int networks();
     int size();
     size_t bytes();
     std::vector<int> topology();
 
     af::array feed_forward(af::array &input);
     af::array feed_forward(std::vector<float> &input);
+
+    af::array feed_forward_single(af::array &input, int index);
+    af::array feed_forward_single(std::vector<float> &input, int index);
 
     void breed(af::array &fitness, int winners, float min, float max, bool uniform = true);
     void breed(std::vector<float> &fitness, int winners, float min, float max, bool uniform = true);

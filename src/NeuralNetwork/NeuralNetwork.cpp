@@ -69,6 +69,43 @@ af::array NeuralNetwork::feed_forward(std::vector<float> &input){
     return feed_forward(in);
 }
 
+af::array NeuralNetwork::feed_forward_single(af::array &input, int index){
+    af::array value = input;
+
+    if (_weights.empty()) {
+        std::cerr << "The network does not possess any layers!" << "\n";
+        return value;
+    }
+
+    if (input.dims()[0] != _weights[0].dims()[1]) {
+        std::cerr << "The input dimension must match the first layer's weight dimensions!" << "\n";
+        return value;
+    }
+
+    af::array lookup = af::constant(index, 1, 1, 1, 1, u32);
+    // Get the batch size from the input
+    dim_t batchSize = value.dims()[2];
+
+    for (int i = 0; i < _weights.size(); ++i) {
+        af::array weightSlice = af::lookup(_weights[i], lookup, 2);
+        af::array biasSlice = af::lookup(_biases[i], lookup, 2);
+
+        weightSlice = af::tile(weightSlice, 1, 1, batchSize);
+        biasSlice = af::tile(biasSlice, 1, 1, batchSize);
+
+        // z = activation(weights * inputs + biases)
+        value = af::matmul(weightSlice, value) + biasSlice;
+        value = Utility::calculate_activation(value, _activations[i]);
+    }
+
+    return value;
+}
+
+af::array NeuralNetwork::feed_forward_single(std::vector<float> &input, int index){
+    af::array in = Utility::vectorToArray(input);
+    return feed_forward_single(in, index);
+}
+
 void NeuralNetwork::breed(std::vector<float> &fitness, int winners, float min, float max, bool uniform) {
     if (_weights.empty()) {
         std::cerr << "The network does not possess any layers!" << "\n";
@@ -170,11 +207,23 @@ void NeuralNetwork::breed(af::array &fitness, int winners, float min, float max,
     breed(in, winners, min, max, uniform);
 }
 
+int NeuralNetwork::networks() {
+    if (_weights.empty()) {
+        std::cerr << "The network does not possess any layers!" << "\n";
+        return -1;
+    }
+    return _weights[0].dims()[2];
+}
+
 int NeuralNetwork::size() {
     return (int)_weights.size() + 1;
 }
 
 size_t NeuralNetwork::bytes() {
+    if (_weights.empty()) {
+        std::cerr << "The network does not possess any layers!" << "\n";
+        return -1;
+    }
     size_t size = 0;
     for (int i = 0; i < _weights.size(); ++i) {
         size += _biases[i].bytes() + _weights[i].bytes();

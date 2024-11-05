@@ -5,10 +5,10 @@
 #ifndef KI_NETWORKVIEWER_H
 #define KI_NETWORKVIEWER_H
 
-#include "../NeuralNetwork/NeuralNetwork.h"
-#include "../Utility/Utility.h"
+#include "../../NeuralNetwork/NeuralNetwork.h"
+#include "../../Utility/Utility.h"
 
-#include <SFML/Graphics.hpp>
+#include "SFML/Graphics.hpp"
 #include <chrono>
 #include <iostream>
 #include <cmath>
@@ -36,7 +36,7 @@ private:
     sf::Color valueToColor(float value, float minValue, float maxValue);
 
 public:
-    NetworkViewer(sf::Vector2i size, std::string title, NeuralNetwork &_network);
+    NetworkViewer(sf::Vector2i size, std::string title, NeuralNetwork &network);
 
     void update();
     void render(bool showHUD = true);

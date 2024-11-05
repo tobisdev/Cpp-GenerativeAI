@@ -24,13 +24,7 @@ FetchContent_MakeAvailable(SFML)
 file(GLOB_RECURSE SOURCES "src/*.cpp" "src/*.h")
 
 # Add the source files to your project
-add_executable(KI ${SOURCES}
-        src/Utility/Utility.cpp
-        src/Utility/Utility.h
-        src/NeuralNetwork/NeuralNetwork.cpp
-        src/NeuralNetwork/NeuralNetwork.h
-        src/NetworkViewer/NetworkViewer.cpp
-        src/NetworkViewer/NetworkViewer.h)
+add_executable(KI ${SOURCES})
 
 # Include directories
 include_directories(${AF_PATH}/include)
