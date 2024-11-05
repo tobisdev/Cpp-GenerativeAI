@@ -54,10 +54,17 @@ af::array NeuralNetwork::feed_forward(af::array &input) {
         return value;
     }
 
+    // The batches are stored in the 4th dimension because the 3rd dimension is occupied by the networks
+    // Get the batch size from the input
+    dim_t batchSize = value.dims()[3];
+
     for (int i = 0; i < _weights.size(); ++i) {
 
+        af::array weights = af::tile(_weights[i], 1, 1, 1, batchSize);
+        af::array biases = af::tile(_biases[i], 1, 1, batchSize);
+
         // z = activation(weights * inputs + biases)
-        value = af::matmul(_weights[i], value) + _biases[i];
+        value = af::matmul(weights, value) + biases;
         value = Utility::calculate_activation(value, _activations[i]);
     }
 

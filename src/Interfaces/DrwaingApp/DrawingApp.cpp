@@ -88,49 +88,8 @@ void DrawingApp::render(bool showHUD) {
             this->draw(&points[0], points.size(), sf::Points);
         }
     }else{
-//        // Generate normalized coordinate pairs
-//        af::array coordinates = generate_coordinate_pairs(gridSize, gridSize) / (gridSize - 1);
-//
-//        af::array result = _network.feed_forward_single(coordinates, 0);
-//        result = af::moddims(result, af::dim4(3, gridSize * gridSize));
-//
-//        // Initialize the grid of vertices
-//        std::vector<sf::Vertex> grid(gridSize * gridSize);
-//
-//        // Transfer the result data from GPU to CPU in one call
-//        std::vector<float> colors(result.elements());
-//        result.host(colors.data());
-//
-//        for (int index = 0; index < gridSize * gridSize; ++index) {
-//            int i = index % gridSize; // x-coordinate
-//            int j = index / gridSize; // y-coordinate
-//
-//            sf::Vertex v;
-//            v.position = sf::Vector2f(i, j);
-//
-//            // Extract RGB values
-//            float r = colors[index * 3 + 0];
-//            float g = colors[index * 3 + 1];
-//            float b = colors[index * 3 + 2];
-//
-//            // Convert the normalized RGB values to sf::Color
-//            sf::Color color(
-//                    static_cast<sf::Uint8>(r * 255.0f),
-//                    static_cast<sf::Uint8>(g * 255.0f),
-//                    static_cast<sf::Uint8>(b * 255.0f)
-//            );
-//
-//            v.color = color;
-//            grid[index] = v;
-//        }
-//
-//        // Draw the grid of points
-//        sf::Transform transform;
-//        transform.translate(leftUpperCorner);
-//        this->draw(&grid[0], grid.size(), sf::Points, transform);
-
         // Set grid size and batch size
-        int batchSize = 10000; // Adjust based on GPU capabilities
+        int batchSize = 80000; // Adjust based on GPU capabilities
 
         // Total number of points
         int totalPoints = gridSize * gridSize;
