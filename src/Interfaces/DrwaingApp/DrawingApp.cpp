@@ -24,9 +24,10 @@ sf::RenderWindow(sf::VideoMode(size.x, size.y), title), _network(network) {
 }
 
 void DrawingApp::update() {
+    int totalPoints = points.size();
     int networks = _network.networks();
 
-    if(!showResult){
+    if(totalPoints > 0){
         std::vector<float> fitness(networks, 0.0f);
 
         for (auto &point : points) {
@@ -55,10 +56,8 @@ void DrawingApp::update() {
 
         int idxBest = Utility::find_top_n(fitness, 1)[0];
         std::cout << "The best performing network is #" << idxBest << " with an error of: " << -1.0f * fitness[idxBest] << "\n";
-        _network.breed(fitness, 1, -0.1f, 0.1f);
+        _network.breed(fitness, 1, -1.0f, +1.0f);
     }
-
-
 
     sf::Event event;
     while (this->pollEvent(event))
@@ -82,94 +81,101 @@ void DrawingApp::render(bool showHUD) {
 
     this->draw(rect);
 
-    if(!showResult){
-        if (!points.empty())
-        {
-            this->draw(&points[0], points.size(), sf::Points);
-        }
-    }else{
-        // Set grid size and batch size
-        int batchSize = 80000; // Adjust based on GPU capabilities
+    // Draw grid
+    // Set grid size and batch size
+    int batchSize = 80000;
 
-        // Total number of points
-        int totalPoints = gridSize * gridSize;
+    // Total number of points
+    int totalPoints = gridSize * gridSize;
 
-        // Prepare vectors to hold all positions and colors
-        std::vector<float> x_positions(totalPoints);
-        std::vector<float> y_positions(totalPoints);
+    // Prepare vectors to hold all positions and colors
+    std::vector<float> x_positions(totalPoints);
+    std::vector<float> y_positions(totalPoints);
 
-        // Generate coordinate pairs in row-major order
-        for (int index = 0; index < totalPoints; ++index) {
-            int x = index % gridSize;
-            int y = index / gridSize;
-            x_positions[index] = static_cast<float>(x) / (gridSize - 1); // Normalize to [0,1]
-            y_positions[index] = static_cast<float>(y) / (gridSize - 1); // Normalize to [0,1]
-        }
+    // Generate coordinate pairs in row-major order
+    for (int index = 0; index < totalPoints; ++index) {
+        int x = index % gridSize;
+        int y = index / gridSize;
+        x_positions[index] = static_cast<float>(x) / (gridSize - 1); // Normalize to [0,1]
+        y_positions[index] = static_cast<float>(y) / (gridSize - 1); // Normalize to [0,1]
+    }
 
-        // Prepare vector to hold all colors
-        std::vector<float> colors(totalPoints * 3); // 3 channels (RGB)
+    // Prepare vector to hold all colors
+    std::vector<float> colors(totalPoints * 3); // 3 channels (RGB)
 
-        // Process inputs in batches
-        int numBatches = (totalPoints + batchSize - 1) / batchSize; // Ceiling division
+    // Process inputs in batches
+    int numBatches = (totalPoints + batchSize - 1) / batchSize; // Ceiling division
 
-        for (int batch = 0; batch < numBatches; ++batch) {
-            int startIdx = batch * batchSize;
-            int endIdx = std::min(startIdx + batchSize, totalPoints);
-            int currentBatchSize = endIdx - startIdx;
+    for (int batch = 0; batch < numBatches; ++batch) {
+        int startIdx = batch * batchSize;
+        int endIdx = std::min(startIdx + batchSize, totalPoints);
+        int currentBatchSize = endIdx - startIdx;
 
-            // Prepare input arrays for the current batch
-            std::vector<float> batch_positions(2 * currentBatchSize); // x and y positions
-            for (int i = 0; i < currentBatchSize; ++i) {
-                batch_positions[2 * i] = x_positions[startIdx + i];
-                batch_positions[2 * i + 1] = y_positions[startIdx + i];
-            }
-
-            // Convert to ArrayFire array
-            af::array in(2, 1, currentBatchSize, batch_positions.data());
-
-            // Feed forward the batch
-            af::array result = _network.feed_forward_single(in, 0); // Output shape: [3, 1, currentBatchSize]
-
-            // Retrieve the results from the GPU
-            std::vector<float> batch_colors(result.elements());
-            result.host(batch_colors.data());
-
-            // Store the colors in the main colors vector
-            for (int i = 0; i < currentBatchSize; ++i) {
-                colors[3 * (startIdx + i) + 0] = batch_colors[3 * i + 0]; // R
-                colors[3 * (startIdx + i) + 1] = batch_colors[3 * i + 1]; // G
-                colors[3 * (startIdx + i) + 2] = batch_colors[3 * i + 2]; // B
-            }
+        // Prepare input arrays for the current batch
+        std::vector<float> batch_positions(2 * currentBatchSize); // x and y positions
+        for (int i = 0; i < currentBatchSize; ++i) {
+            batch_positions[2 * i] = x_positions[startIdx + i];
+            batch_positions[2 * i + 1] = y_positions[startIdx + i];
         }
 
-        // Create an sf::Image to hold the pixel data
-        sf::Image image;
-        image.create(gridSize, gridSize);
+        // Convert to ArrayFire array
+        af::array in(2, 1, currentBatchSize, batch_positions.data());
 
-        // Fill the image with the colors
-        for (int index = 0; index < totalPoints; ++index) {
-            int x = index % gridSize;
-            int y = index / gridSize;
+        // Feed forward the batch
+        af::array result = _network.feed_forward_single(in, 0); // Output shape: [3, 1, currentBatchSize]
 
-            // Extract RGB values
-            float r = colors[3 * index + 0];
-            float g = colors[3 * index + 1];
-            float b = colors[3 * index + 2];
+        // Retrieve the results from the GPU
+        std::vector<float> batch_colors(result.elements());
+        result.host(batch_colors.data());
 
-            // Convert the normalized RGB values to sf::Color
-            sf::Color col(
-                    static_cast<sf::Uint8>(std::clamp(r, 0.0f, 1.0f) * 255.0f),
-                    static_cast<sf::Uint8>(std::clamp(g, 0.0f, 1.0f) * 255.0f),
-                    static_cast<sf::Uint8>(std::clamp(b, 0.0f, 1.0f) * 255.0f)
-            );
-
-            image.setPixel(x, y, col);
+        // Store the colors in the main colors vector
+        for (int i = 0; i < currentBatchSize; ++i) {
+            colors[3 * (startIdx + i) + 0] = batch_colors[3 * i + 0]; // R
+            colors[3 * (startIdx + i) + 1] = batch_colors[3 * i + 1]; // G
+            colors[3 * (startIdx + i) + 2] = batch_colors[3 * i + 2]; // B
         }
+    }
 
-        sf::Texture texture;
-        texture.loadFromImage(image);
-        sf::Sprite sprite(texture);
-        this->draw(sprite);
+    // Create an sf::Image to hold the pixel data
+    sf::Image image;
+    image.create(gridSize, gridSize);
+
+    // Fill the image with the colors
+    for (int index = 0; index < totalPoints; ++index) {
+        int x = index % gridSize;
+        int y = index / gridSize;
+
+        // Extract RGB values
+        float r = colors[3 * index + 0];
+        float g = colors[3 * index + 1];
+        float b = colors[3 * index + 2];
+
+        // Convert the normalized RGB values to sf::Color
+        sf::Color col(
+                static_cast<sf::Uint8>(std::clamp(r, 0.0f, 1.0f) * 255.0f),
+                static_cast<sf::Uint8>(std::clamp(g, 0.0f, 1.0f) * 255.0f),
+                static_cast<sf::Uint8>(std::clamp(b, 0.0f, 1.0f) * 255.0f)
+        );
+
+        image.setPixel(x, y, col);
+    }
+
+    sf::Texture texture;
+    texture.loadFromImage(image);
+    sf::Sprite sprite(texture);
+    this->draw(sprite);
+
+    // Draw Poins
+    if (!points.empty()) {
+        sf::CircleShape c;
+        c.setRadius(4);
+        c.setOutlineThickness(2);
+        c.setOutlineColor(sf::Color::Black);
+        for (auto &point : points) {
+            c.setFillColor(point.color);
+            c.setPosition(point.position);
+            this->draw(c);
+        }
     }
 
     this->display();
@@ -245,6 +251,11 @@ void DrawingApp::handleEvents(sf::Event event) {
             this->setView(currView);
             break;
         }
+
+        case sf::Event::KeyPressed:
+            if(event.key.code == sf::Keyboard::C || event.key.code == sf::Keyboard::R){
+                points.clear();
+            }
 
         case sf::Event::MouseButtonPressed:
             if (event.mouseButton.button == sf::Mouse::Left) {
