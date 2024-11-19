@@ -8,6 +8,29 @@
 #include "SFML/Graphics.hpp"
 #include "../../NeuralNetwork/NeuralNetwork.h"
 
+enum Color : int {Black = 0, White = 1};
+extern int enumSize;
+
+struct Point{
+    Color color;
+    sf::Vector2f position;
+
+    Point() = default;
+    Point(sf::Vector2f pos, Color col){
+        color = col;
+        position = pos;
+    }
+
+    sf::Color getColor(){
+        switch (color) {
+            case Black:
+                return sf::Color::Black;
+            case White:
+                return sf::Color::White;
+        }
+    }
+};
+
 class DrawingApp : public sf::RenderWindow {
 private:
     sf::Font _globalFont;
@@ -15,9 +38,7 @@ private:
 
     NeuralNetwork &_network;
 
-    std::vector<sf::Vertex> points;
-
-    std::vector<sf::Vertex> grid;
+    std::vector<Point> points;
 
     af::array generate_coordinate_pairs(int x_size, int y_size);
     sf::Color value_to_color(float value, float minValue, float maxValue);
@@ -25,7 +46,7 @@ private:
     void handleEvents(sf::Event event);
 
     bool showResult = false;
-    float currentDrawingColor = 0.0f;
+    Color currentDrawingColor = Black;
 
     int gridSize;
 

@@ -11,6 +11,8 @@
 #undef min
 #endif
 
+int enumSize = 2;
+
 DrawingApp::DrawingApp(sf::Vector2i size, std::string title, NeuralNetwork &network) :
 sf::RenderWindow(sf::VideoMode(size.x, size.y), title), _network(network) {
     // FONT
@@ -36,14 +38,12 @@ void DrawingApp::update() {
                     point.position.x / ((float)gridSize - 1.0f),
                     point.position.y / ((float)gridSize - 1.0f)
             };
-            std::vector<float> col = {(float)point.color.r / 255.0f, (float)point.color.g / 255.0f, (float)point.color.b / 255.0f};
-
             af::array in = Utility::vectorToArray(pos);
             af::array in3d = af::tile(in, 1, 1, networks);
 
             af::array result3d = _network.feed_forward(in3d);
 
-            af::array exp = Utility::vectorToArray(col);
+            af::array exp = Utility::mapIndexToArray(point.color, enumSize);
             af::array exp3d = af::tile(exp, 1, 1, networks);
 
             af::array error = af::pow(result3d - exp3d, 2);
@@ -56,7 +56,7 @@ void DrawingApp::update() {
 
         int idxBest = Utility::find_top_n(fitness, 1)[0];
         std::cout << "The best performing network is #" << idxBest << " with an error of: " << -1.0f * fitness[idxBest] << "\n";
-        _network.breed(fitness, 1, -1.0f, +1.0f);
+        _network.breed(fitness, 500, -0.05f, +0.05f);
     }
 
     sf::Event event;
@@ -68,7 +68,6 @@ void DrawingApp::update() {
 
 
 void DrawingApp::render(bool showHUD) {
-
     sf::Vector2u size = this->getSize();
     sf::Vector2f leftUpperCorner((float)size.x / 2.0f - (float)gridSize / 2.0f, (float)size.y / 2.0f - (float)gridSize / 2.0f);
 
@@ -101,7 +100,7 @@ void DrawingApp::render(bool showHUD) {
     }
 
     // Prepare vector to hold all colors
-    std::vector<float> colors(totalPoints * 3); // 3 channels (RGB)
+    std::vector<int> colors(totalPoints);
 
     // Process inputs in batches
     int numBatches = (totalPoints + batchSize - 1) / batchSize; // Ceiling division
@@ -121,19 +120,36 @@ void DrawingApp::render(bool showHUD) {
         // Convert to ArrayFire array
         af::array in(2, 1, currentBatchSize, batch_positions.data());
 
-        // Feed forward the batch
-        af::array result = _network.feed_forward_single(in, 0); // Output shape: [3, 1, currentBatchSize]
+// Feed forward the batch
+        af::array result = _network.feed_forward_single(in, 0); // Output shape: [n, 1, batchSize]
 
-        // Retrieve the results from the GPU
-        std::vector<float> batch_colors(result.elements());
-        result.host(batch_colors.data());
-
-        // Store the colors in the main colors vector
-        for (int i = 0; i < currentBatchSize; ++i) {
-            colors[3 * (startIdx + i) + 0] = batch_colors[3 * i + 0]; // R
-            colors[3 * (startIdx + i) + 1] = batch_colors[3 * i + 1]; // G
-            colors[3 * (startIdx + i) + 2] = batch_colors[3 * i + 2]; // B
+        if(showResult){
+            //af::print("result: ", result);
         }
+
+
+// Extract the color index for all batch elements at once
+// Assuming result is 3D: [n, 1, batchSize]
+// We want to map it directly to indices/colors for all batchSize elements
+
+// Reshape the result to [n, batchSize] for easier processing
+        result = af::moddims(result, af::dim4(result.dims(0), result.dims(2)));
+
+// Perform GPU-side operation to map results to color indices
+        af::array colorIndices = Utility::mapArrayToIndices(result); // Custom GPU mapping function
+
+// Retrieve the entire batch of colors in one call
+        std::vector<int> batchColors(colorIndices.elements());
+        colorIndices.host(batchColors.data());
+
+
+        if(showResult) {
+            //af::print("Batch Colors:", colorIndices);
+        }
+
+
+// Append the results to the main colors vector
+        colors.insert(colors.begin() + startIdx, batchColors.begin(), batchColors.end());
     }
 
     // Create an sf::Image to hold the pixel data
@@ -146,16 +162,13 @@ void DrawingApp::render(bool showHUD) {
         int y = index / gridSize;
 
         // Extract RGB values
-        float r = colors[3 * index + 0];
-        float g = colors[3 * index + 1];
-        float b = colors[3 * index + 2];
-
-        // Convert the normalized RGB values to sf::Color
-        sf::Color col(
-                static_cast<sf::Uint8>(std::clamp(r, 0.0f, 1.0f) * 255.0f),
-                static_cast<sf::Uint8>(std::clamp(g, 0.0f, 1.0f) * 255.0f),
-                static_cast<sf::Uint8>(std::clamp(b, 0.0f, 1.0f) * 255.0f)
-        );
+        Point point;
+        point.color = static_cast<Color>(colors[index]);
+        if(showResult) {
+            std::cout << "index: " << colors[index] << "\n";
+            std::cout << "color: " << point.color << "\n";
+        }
+        sf::Color col = point.getColor();
 
         image.setPixel(x, y, col);
     }
@@ -172,7 +185,7 @@ void DrawingApp::render(bool showHUD) {
         c.setOutlineThickness(2);
         c.setOutlineColor(sf::Color::Black);
         for (auto &point : points) {
-            c.setFillColor(point.color);
+            c.setFillColor(point.getColor());
             c.setPosition(point.position);
             this->draw(c);
         }
@@ -232,7 +245,6 @@ sf::Color DrawingApp::value_to_color(float value, float minValue, float maxValue
 
 void DrawingApp::handleEvents(sf::Event event) {
     sf::Vector2i mousePos = sf::Mouse::getPosition(*this);
-    sf::Color drawingColor = value_to_color(currentDrawingColor, -1.0f, +1.0f);
 
     switch (event.type) {
         case sf::Event::Closed:
@@ -259,7 +271,7 @@ void DrawingApp::handleEvents(sf::Event event) {
 
         case sf::Event::MouseButtonPressed:
             if (event.mouseButton.button == sf::Mouse::Left) {
-                points.push_back(sf::Vertex(sf::Vector2f(mousePos.x, mousePos.y), drawingColor));
+                points.emplace_back(sf::Vector2f(mousePos.x, mousePos.y), currentDrawingColor);
             } else if (event.mouseButton.button == sf::Mouse::Right) {
                 showResult = !showResult;
             }
@@ -267,16 +279,17 @@ void DrawingApp::handleEvents(sf::Event event) {
 
         case sf::Event::MouseMoved:
             if (sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
-                points.push_back(sf::Vertex(sf::Vector2f(mousePos.x, mousePos.y), drawingColor));
+                points.emplace_back(sf::Vector2f(mousePos.x, mousePos.y), currentDrawingColor);
             }
             break;
 
         case sf::Event::MouseWheelScrolled:
 
-            currentDrawingColor += event.mouseWheelScroll.delta / 20.0f;
+            int selected = static_cast<int>(currentDrawingColor) + event.mouseWheelScroll.delta;
+            selected = (selected >= enumSize) ? 0 : selected;
+            selected = (selected < 0) ? enumSize - 1 : selected;
+            currentDrawingColor = static_cast<Color>(selected);
 
-            currentDrawingColor = (currentDrawingColor > +1.0f) ? currentDrawingColor - 2.0f : currentDrawingColor;
-            currentDrawingColor = (currentDrawingColor < -1.0f) ? currentDrawingColor + 2.0f : currentDrawingColor;
             break;
     }
 }

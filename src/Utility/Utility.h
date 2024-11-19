@@ -44,6 +44,14 @@ public:
     // Find the n biggest values in a vector
     static std::vector<int> find_top_n(const std::vector<float>& vec, int n);
 
+    // Map results
+    static int mapVectorToIndex(std::vector<float> const &vector);
+    static std::vector<float> mapIndexToVector(int index, int size);
+    static int mapArrayToIndex(af::array const &array);
+    static af::array mapIndexToArray(int index, int size);
+
+    static af::array mapArrayToIndices(const af::array& input); // Chat abi
+
     // Getter and setter
     [[nodiscard]] static bool &initialized() { return _initialized; }
     [[nodiscard]] static char* deviceName() { return _deviceName; }

@@ -72,11 +72,8 @@ int main() {
 
     Utility::setup();
 
-    std::vector<int> topology = {2, 5, 3, 5, 5, 3};
+    std::vector<int> topology = {2, 8, 2};
     std::vector<Utility::Activations> activations = {
-            Utility::Activations::Tanh,
-            Utility::Activations::Tanh,
-            Utility::Activations::Tanh,
             Utility::Activations::Tanh,
             Utility::Activations::Tanh
     };

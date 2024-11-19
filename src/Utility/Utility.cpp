@@ -178,3 +178,40 @@ std::vector<int> Utility::find_top_n(const std::vector<float>& vec, int n) {
 
     return result;
 }
+
+int Utility::mapVectorToIndex(const std::vector<float> &vector) {
+    return find_top_n(vector, 1)[0];
+}
+
+std::vector<float> Utility::mapIndexToVector(int index, int size) {
+    if(index >= size){
+        return {};
+    }
+
+    std::vector<float> vector(size, 0.0f);
+    vector[index] = 1.0f;
+    return vector;
+}
+
+int Utility::mapArrayToIndex(const af::array &array) {
+    return mapVectorToIndex(arrayToVector(array));
+}
+
+af::array Utility::mapIndexToArray(int index, int size) {
+    return vectorToArray(mapIndexToVector(index, size));
+}
+
+af::array Utility::mapArrayToIndices(const af::array& input) {
+// Check if input has the correct number of dimensions
+    if (input.numdims() != 2) {
+        std::cerr << "Error: Input array must have exactly 2 dimensions.\n";
+        return af::array();
+    }
+
+    // Determine the index of the highest value for each column (batch)
+    af::array maxValues, indices;
+    af::max(maxValues, indices, input, 0); // Compute along the first dimension (rows)
+
+    // Return the indices of the maximum values
+    return indices;
+}
