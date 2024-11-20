@@ -49,8 +49,7 @@ public:
     static std::vector<float> mapIndexToVector(int index, int size);
     static int mapArrayToIndex(af::array const &array);
     static af::array mapIndexToArray(int index, int size);
-
-    static af::array mapArrayToIndices(const af::array& input); // Chat abi
+    static af::array mapArrayToIndices(const af::array& input);
 
     // Getter and setter
     [[nodiscard]] static bool &initialized() { return _initialized; }

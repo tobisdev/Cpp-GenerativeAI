@@ -148,6 +148,7 @@ std::string Utility::sizeToString(size_t size) {
 
 std::vector<int> Utility::find_top_n(const std::vector<float>& vec, int n) {
     if (vec.empty() || n <= 0) {
+        std::cerr << "The vector cannot be empty.\n";
         return {};
     }
 
@@ -185,6 +186,7 @@ int Utility::mapVectorToIndex(const std::vector<float> &vector) {
 
 std::vector<float> Utility::mapIndexToVector(int index, int size) {
     if(index >= size){
+        std::cerr << "The index cannot be greater then or equal to the size.\n";
         return {};
     }
 
@@ -202,7 +204,7 @@ af::array Utility::mapIndexToArray(int index, int size) {
 }
 
 af::array Utility::mapArrayToIndices(const af::array& input) {
-// Check if input has the correct number of dimensions
+    // Check if input has the correct number of dimensions
     if (input.numdims() != 2) {
         std::cerr << "Error: Input array must have exactly 2 dimensions.\n";
         return af::array();
@@ -210,7 +212,7 @@ af::array Utility::mapArrayToIndices(const af::array& input) {
 
     // Determine the index of the highest value for each column (batch)
     af::array maxValues, indices;
-    af::max(maxValues, indices, input, 0); // Compute along the first dimension (rows)
+    af::max(maxValues, indices, input, 0);
 
     // Return the indices of the maximum values
     return indices;

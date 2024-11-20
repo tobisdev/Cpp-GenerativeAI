@@ -8,7 +8,7 @@
 #include "SFML/Graphics.hpp"
 #include "../../NeuralNetwork/NeuralNetwork.h"
 
-enum Color : int {Black = 0, White = 1};
+enum Color : int {Red = 0, Blue = 1};
 extern int enumSize;
 
 struct Point{
@@ -23,10 +23,10 @@ struct Point{
 
     sf::Color getColor(){
         switch (color) {
-            case Black:
-                return sf::Color::Black;
-            case White:
-                return sf::Color::White;
+            case Red:
+                return sf::Color::Red;
+            case Blue:
+                return sf::Color::Blue;
         }
     }
 };
@@ -36,19 +36,20 @@ private:
     sf::Font _globalFont;
     sf::Vector2i _previousSize;
 
+    int _batchSize = 80000; // For rendering
     NeuralNetwork &_network;
 
-    std::vector<Point> points;
+    std::vector<Point> _points;
+    std::vector<af::array> _positions; // X and Y as float
 
-    af::array generate_coordinate_pairs(int x_size, int y_size);
-    sf::Color value_to_color(float value, float minValue, float maxValue);
+    bool _showResult = false;
+    Color _currentDrawingColor = Red;
 
+    int _gridSize;
+
+    void renderPoints();
+    void renderNetworkOutput();
     void handleEvents(sf::Event event);
-
-    bool showResult = false;
-    Color currentDrawingColor = Black;
-
-    int gridSize;
 
 public:
     DrawingApp(sf::Vector2i size, std::string title, NeuralNetwork &_network);
