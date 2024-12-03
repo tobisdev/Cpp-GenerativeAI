@@ -11,16 +11,18 @@
 #include "Interfaces/DrawingApp/DrawingApp.h"
 
 int main() {
+    // Setup the environment
     Utility::setup();
 
-    std::vector<int> topology = {2, 8, 2};
+    int networks = 50000;
+    std::vector<int> topology = {2, 5, 5, 2};
     std::vector<Utility::Activations> activations = {
+            Utility::Activations::Tanh,
             Utility::Activations::Tanh,
             Utility::Activations::Tanh
     };
 
-    int networks = 50000;
-
+    // Initialize the neural network
     NeuralNetwork network(topology, activations, -2.8f, 2.8f, true, networks);
 
     NetworkViewer viewer({1000, 800}, "Neural-Network-Viewer", network);
@@ -29,7 +31,9 @@ int main() {
     viewer.setFramerateLimit(144);
     drawing.setFramerateLimit(144);
 
+    // Stops when a window is closed
     while (drawing.isOpen() && viewer.isOpen()) {
+        // This code runs every Frame
         viewer.update();
         viewer.render();
         drawing.update();

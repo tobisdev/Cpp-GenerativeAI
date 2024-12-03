@@ -3,19 +3,11 @@
 //
 
 #include "DrawingApp.h"
-
-#ifdef max
-#undef max
-#endif
-#ifdef min
-#undef min
-#endif
-
 int enumSize = 2;
 
 DrawingApp::DrawingApp(sf::Vector2i size, std::string title, NeuralNetwork &network) :
 sf::RenderWindow(sf::VideoMode(size.x, size.y), title), _network(network) {
-    // FONT
+    // Load the font
     if (!_globalFont.loadFromFile("../../resources/fonts/Roboto.ttf")) {
         return;
     }
@@ -25,7 +17,7 @@ sf::RenderWindow(sf::VideoMode(size.x, size.y), title), _network(network) {
 
     int totalPoints = _gridSize * _gridSize;
 
-    // Prepare vectors to hold all positions and colors
+    // Prepare vectors to hold all positions
     std::vector<float> x_positions(totalPoints);
     std::vector<float> y_positions(totalPoints);
 
@@ -59,6 +51,7 @@ void DrawingApp::update() {
     int totalPoints = _points.size();
     int networks = _network.networks();
 
+    // Train the network on the placed points
     if(totalPoints > 0){
         std::vector<float> fitness(networks, 0.0f);
 
@@ -132,7 +125,7 @@ void DrawingApp::renderPoints() {
 }
 
 void DrawingApp::renderNetworkOutput() {
-// Total number of points
+    // Total number of points
     int totalPoints = _gridSize * _gridSize;
 
     // Prepare vector to hold all colors
@@ -156,7 +149,7 @@ void DrawingApp::renderNetworkOutput() {
         result = af::moddims(result, af::dim4(result.dims(0), result.dims(2)));
 
         // Perform GPU-side operation to map results to color indices
-        af::array colorIndices = Utility::mapArrayToIndices(result); // Custom GPU mapping function
+        af::array colorIndices = Utility::mapArrayToIndices(result);
 
         // Retrieve the entire batch of colors in one call
         std::vector<int> batchColors(colorIndices.elements());
@@ -175,13 +168,8 @@ void DrawingApp::renderNetworkOutput() {
         int x = index % _gridSize;
         int y = index / _gridSize;
 
-        // Extract RGB values
         Point point;
         point.color = static_cast<Color>(colors[index]);
-        if(_showResult) {
-            std::cout << "index: " << colors[index] << "\n";
-            std::cout << "color: " << point.color << "\n";
-        }
         sf::Color col = point.getColor();
 
         image.setPixel(x, y, col);

@@ -13,7 +13,7 @@
 
 NetworkViewer::NetworkViewer(sf::Vector2i size, std::string title, NeuralNetwork &network) :
 sf::RenderWindow(sf::VideoMode(size.x, size.y), title), _network(network) {
-    // set current time
+    // Set current time
     _currentTime = std::chrono::high_resolution_clock::now();
     _previousTime = _currentTime;
 
@@ -27,7 +27,7 @@ sf::RenderWindow(sf::VideoMode(size.x, size.y), title), _network(network) {
 }
 
 void NetworkViewer::update() {
-    // time calculations
+    // Time calculations
     _currentTime = std::chrono::high_resolution_clock::now();
     _deltaTime = std::chrono::duration<float>(_currentTime - _previousTime).count();
     _previousTime = _currentTime;
@@ -191,7 +191,7 @@ void NetworkViewer::renderNetwork() {
     // Draw all lines with one call
     this->draw(lines);
 
-    // Draw all neurons with one call (use a loop because SFML doesn't support batching CircleShapes directly)
+    // Draw all neurons with one call
     for (auto &neuron : neurons) {
         this->draw(neuron);
     }
@@ -279,7 +279,7 @@ void NetworkViewer::handleEvents(sf::Event event) {
 sf::Color NetworkViewer::valueToColor(float value, float minValue, float maxValue) {
     // Normalize the value between 0 and 1
     float normalized = (value - minValue) / (maxValue - minValue);
-    normalized = std::max(0.f, std::min(1.f, normalized)); // Clamping to [0, 1]
+    normalized = std::max(0.f, std::min(1.f, normalized)); // Normalizing to [0, 1]
 
     // Map the normalized value to a hue (0 to 360 degrees)
     float hue = normalized * 360.0f;

@@ -122,7 +122,7 @@ void NeuralNetwork::breed(std::vector<float> &fitness, int winners, float min, f
     unsigned int numNetworks = _weights[0].dims()[2];
 
     if(winners > numNetworks){
-        std::cerr << "The number of winners can not be higher than the number of networks!\n";
+        std::cerr << "The number of winners cannot be higher than the number of networks!\n";
         return;
     }
 
@@ -253,4 +253,15 @@ std::vector<int> NeuralNetwork::topology() {
     }
 
     return output;
+}
+
+bool NeuralNetwork::save(std::string path) {
+    auto topology = this->topology();
+    int networks = this->networks();
+
+    for (int layer = 0; layer < topology.size(); ++layer) {
+        for (int network = 0; network < networks; ++network) {
+            //
+        }
+    }
 }

@@ -44,7 +44,7 @@ public:
     // Find the n biggest values in a vector
     static std::vector<int> find_top_n(const std::vector<float>& vec, int n);
 
-    // Map results
+    // Find the biggest elements index in a vector or reversed (used for AI training)
     static int mapVectorToIndex(std::vector<float> const &vector);
     static std::vector<float> mapIndexToVector(int index, int size);
     static int mapArrayToIndex(af::array const &array);
