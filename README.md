@@ -96,4 +96,4 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 
 ## Acknowledgments
 
-Cpp-GenerativeAI is developed by [Tobias Huber](https://github.com/tobisdev) as part of the IntelliDrive project, contributing to advancements in AI-driven autonomous driving solutions.
+Cpp-GenerativeAI is developed by [Tobias Huber](https://github.com/tobisdev) as part of the [IntelliDrive](https://github.com/voricc/Cpp-IntelliDrive-DiplomArbeit) project, contributing to advancements in AI-driven autonomous driving solutions.
