@@ -39,8 +39,8 @@ Cpp-GenerativeAI is a comprehensive C++ library that integrates a genetic algori
 
 ### Interacting with the AI via a drawing Application:
 
-<img src="https://github.com/user-attachments/assets/381a4e0a-f810-4233-9c81-2c4ad7f58af4" alt="grafik" height="450">
-<img src="https://github.com/user-attachments/assets/3a2e8fae-241c-4dbd-9e58-1d4fae77a68f" alt="grafik" height="450">
+<img src="https://github.com/user-attachments/assets/381a4e0a-f810-4233-9c81-2c4ad7f58af4" alt="grafik" height="370">
+<img src="https://github.com/user-attachments/assets/3a2e8fae-241c-4dbd-9e58-1d4fae77a68f" alt="grafik" height="370">
 
 ### Integration of the AI into our IntelliDrive Project:
 
