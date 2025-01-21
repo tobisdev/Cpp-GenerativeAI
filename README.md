@@ -50,7 +50,7 @@ Your browser does not support the video tag.
 
 ## Warning
 
-The current code in the **vendors** folder is not originally authored by us, as the CMake configuration still requires modification. Below are the referenced projects:
+The current code in the **vendors** folder is not originally authored by me, as the CMake configuration still requires modification. Below are the referenced projects:
 
 - [JSON for Modern C++](https://github.com/nlohmann/json)
 
