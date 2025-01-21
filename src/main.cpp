@@ -25,6 +25,10 @@ int main() {
     // Initialize the neural network
     NeuralNetwork network(topology, activations, -2.8f, 2.8f, true, networks);
 
+    std::cout << "Saving... \n";
+    //network.save("testFile");
+    std::cout << "Done saving!\n";
+
     NetworkViewer viewer({1000, 800}, "Neural-Network-Viewer", network);
     DrawingApp drawing({800, 800}, "Drawing App", network);
 

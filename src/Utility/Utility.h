@@ -22,7 +22,7 @@ private:
 
 public:
     // Activation functions
-    enum class Activations {
+    enum class Activations : int {
         ReLU, LeakyReLU, Sigmoid, Linear, Tanh
     };
 

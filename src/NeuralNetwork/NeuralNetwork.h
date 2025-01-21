@@ -9,6 +9,9 @@
 #include <vector>
 #include <random>
 #include <chrono>
+#include <fstream>
+#include <sstream>
+#include "../../vendors/json/json.hpp"
 
 #include "../Utility/Utility.h"
 
@@ -37,7 +40,7 @@ public:
 
     // Functions
     bool load(std::string path);
-    bool save(std::string path);
+    bool save(std::string path, int amount = 1);
     int networks();
     int size();
     size_t bytes();
