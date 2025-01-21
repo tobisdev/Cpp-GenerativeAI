@@ -48,6 +48,13 @@ Cpp-GenerativeAI is a comprehensive C++ library that integrates a genetic algori
 Your browser does not support the video tag.
 </video>
 
+## Warning
+
+The current code in the **vendors** folder is not originally authored by us, as the CMake configuration still requires modification. Below are the referenced projects:
+
+- [JSON for Modern C++](https://github.com/nlohmann/json)
+
+
 ## Getting Started
 
 Follow these instructions to set up the project using CLion, Visual Studio C++ Compiler, and ArrayFire.
